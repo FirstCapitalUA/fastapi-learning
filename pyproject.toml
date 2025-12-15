@@ -1,0 +1,74 @@
+[project]
+name = "fastapi-learning"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.122.0",
+    "ruff>=0.14.6",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+lint.select = [
+#    "FAST", # fastapi
+    "YTT", # flake8-2020
+    "ASYNC", # flake8-async
+    "S", # flake8-bandit
+    "BLE", # flake8-blind-except
+    "FBT", # flake8-boolean-trap
+    "B", # flake8-bugbear
+    "A", # flake8-builtins
+    "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "EM", # flake8-errmsg
+    "FA", # flake8-future-annotations
+    "INT", # flake8-gettext
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "LOG", # flake8-logging
+    "G", # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "PYI", # flake8-pyi
+    "PT", # flake8-pytest-style
+    "Q", # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "TC", # flake8-type-checking
+    "ARG", # flake8-arguments
+    "PTH", # flake8-pathlib
+    "I", # isort
+    "C90", # mccabe
+    "N", # pep8-naming
+    "PERF", # Perflint
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "PGH", # pygrep-hooks
+    "PL", # Pylint
+    "UP", # pyupgrade
+    "TCH", # flake8-type-checking
+#    "RUF", # Ruff
+    "TRY", # tryceratops
+]
+
+lint.ignore = [
+    "COM812", # conflicting
+    "B008", # do not perform function calls in argument defaults
+    "PTH123", # builtin-open
+    "PT023", # pytest-style
+    "N805", # self
+    "E712", # Avoid equality comparison
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004"]
+
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id"]
