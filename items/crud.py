@@ -60,8 +60,6 @@ def item_delete(item_id: int) -> HTTPException | str:
     return f"Предмет с id {item_id} удален"
 
 
-
-
 def item_update(item_id: int, item_in: ItemUpdate) -> ItemRead:
     items = _load_items()
 

@@ -51,4 +51,4 @@ class UserCartCreate(UserCart):
 
 
 class UserCartRead(UserCart):
-    id: int  # ид козины
+    id: int

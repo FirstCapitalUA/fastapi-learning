@@ -60,6 +60,7 @@ def user_read(user_id: int) -> HTTPException | UserRead:
         return HTTPException(status_code=404, detail=msg)
     return UserRead(id=user_id, **user_data)
 
+
 def user_update(user_id: int, user_in: UserUpdate) -> UserRead:
     users = _load_users()
     if user_id not in users:
@@ -85,8 +86,6 @@ def user_delete(user_id: int) -> HTTPException | str:
     return f"Пользователь с id {user_id} удален"
 
 
-
-
 def user_with_items_model(user_id: int) -> HTTPException | UserWithItems:
     users = _load_users()
     items = _load_items()
@@ -94,7 +93,6 @@ def user_with_items_model(user_id: int) -> HTTPException | UserWithItems:
     if user_id not in users:
         msg = f"user {user_id} is not found."
         return HTTPException(status_code=404, detail=msg)
-
 
     user_data = users[user_id]
 

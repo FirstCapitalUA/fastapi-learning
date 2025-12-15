@@ -51,8 +51,6 @@ def delete_user(user_id: int) -> str:
     return user_delete(user_id)
 
 
-
-
 @router.get("/with_items/{user_id}", status_code=status.HTTP_200_OK)
 def get_user_with_items_(user_id: int):
     return user_with_items_model(user_id)
