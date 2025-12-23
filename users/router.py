@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from starlette import status
 
+from core.database import SessionDep
 from users.crud import (
     user_create,
     user_create_cart,
@@ -13,42 +14,41 @@ from users.crud import (
     user_with_items_model,
 )
 from users.model import (
-    User,
     UserCart,
     UserCartCreate,
     UserCartRead,
     UserCreate,
     UserRead,
     UserReadShort,
-    UserUpdate,
+    UserUpdate, User,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/{user_id}", status_code=status.HTTP_200_OK)
-def get_user(user_id: int) -> UserRead:
-    return user_read(user_id)
+def get_user(user_id: int, session: SessionDep) -> UserRead:
+    return user_read(user_id, session)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_user(user_in: UserCreate) -> User:
-    return user_create(user_in)
+def create_user(user_in: UserCreate, session:SessionDep) -> UserCreate:
+    return user_create(user_in, session)
 
 
 @router.patch("/{user_id}", status_code=status.HTTP_200_OK)
-def update_user(user_id: int, user_in: UserUpdate) -> UserRead:
-    return user_update(user_id, user_in)
+def update_user(user_id: int, user_in: UserUpdate, session:SessionDep) -> type[User]:
+    return user_update(user_id, user_in, session)
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def read_all_users() -> list[UserReadShort]:
-    return user_read_all()
+def read_all_users(session:SessionDep) -> list[UserReadShort]:
+    return user_read_all(session)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-def delete_user(user_id: int) -> str:
-    return user_delete(user_id)
+def delete_user(user_id: int, session:SessionDep) -> str:
+    return user_delete(user_id, session)
 
 
 @router.get("/with_items/{user_id}", status_code=status.HTTP_200_OK)
@@ -79,3 +79,4 @@ def delete_user_cart(user_id: int) -> str:
     удалить корзину с товарами для пользоавателя.
     """
     return user_delete_cart(user_id)
+

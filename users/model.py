@@ -1,27 +1,32 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import EmailStr
 
 from items.model import ItemReadShort
 
+from sqlmodel import Field, SQLModel
 
-class User(BaseModel):
+class UserBase(SQLModel):
     first_name: str
     last_name: str
     email: EmailStr
     age: int
     password: str | None = Field(None, min_length=6, max_length=25)
     sex: str
+
+class User(UserBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     cart_id: int | None = None
 
 
-class UserRead(User):
+
+class UserRead(UserBase):
     id: int
 
 
-class UserCreate(User):
+class UserCreate(UserBase):
     pass
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(SQLModel):
     first_name: str | None = None
     last_name: str | None = None
     email: EmailStr | None = None
@@ -30,7 +35,7 @@ class UserUpdate(BaseModel):
     sex: str | None = None
 
 
-class UserReadShort(BaseModel):
+class UserReadShort(SQLModel):
     id: int
     first_name: str
     last_name: str
@@ -41,7 +46,7 @@ class UserWithItems(UserReadShort):
     items: list[ItemReadShort]
 
 
-class UserCart(BaseModel):
+class UserCart(SQLModel):
     user_id: int
     item_ids: list[int] | None = None
 
@@ -52,3 +57,4 @@ class UserCartCreate(UserCart):
 
 class UserCartRead(UserCart):
     id: int
+

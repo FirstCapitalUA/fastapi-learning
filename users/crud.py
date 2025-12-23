@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlmodel import Session, select
 
 from helper.files import read_json, write_json
 from items.crud import _load_items
@@ -37,56 +38,54 @@ def _save_cart(cart: dict[int, dict]):
     db["cart"] = {str(k): v for k, v in cart.items()}
     write_json(db)
 
-
-def user_create(user_in: UserCreate) -> User:
-    users = _load_users()
-    new_id = max(users.keys(), default=0) + 1
-    user = User(**user_in.model_dump())
-    users[new_id] = user.model_dump()
-    _save_users(users)
-    return user
+def user_create(user_in: UserCreate, session: Session) -> UserCreate:
+    session.add(user_in)      # Добавляем в сессию
+    session.commit()         # Сохраняем в файл .db
+    session.refresh(user_in)  # Получаем ID от базы
+    return user_in
 
 
-def user_read_all() -> list[UserReadShort]:
-    users = _load_users()
-    return [UserReadShort(id=i, **data) for i, data in users.items()]
+
+def user_read_all(session: Session) -> list[UserReadShort]:
+    users = session.exec(select(User)).all()
+    return [UserReadShort(**user.model_dump()) for user in users]
 
 
-def user_read(user_id: int) -> HTTPException | UserRead:
-    users = _load_users()
-    user_data = users.get(user_id)
-    if not user_data:
+def user_read(user_id: int, session: Session) -> UserRead:
+    user = session.get(User, user_id)
+    if not user:
         msg = f"user {user_id} is not found."
-        return HTTPException(status_code=404, detail=msg)
-    return UserRead(id=user_id, **user_data)
+        raise HTTPException(status_code=404, detail=msg)
+    return UserRead(**user.model_dump())
 
 
-def user_update(user_id: int, user_in: UserUpdate) -> UserRead:
-    users = _load_users()
-    if user_id not in users:
+def user_update(user_id: int, user_in: UserUpdate, session: Session) -> type[User]:
+    user = session.get(User, user_id)
+    if not user:
         msg = f"user {user_id} is not found."
         raise HTTPException(status_code=404, detail=msg)
 
-    current_data = users[user_id]
-    update_data = user_in.model_dump(exclude_unset=True)
-    current_data.update(update_data)
-    users[user_id] = current_data
-    _save_users(users)
-    return UserRead(id=user_id, **current_data)
+    update_data = user.model_dump(exclude_unset=True)
+
+    user.sqlmodel_update(update_data)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
 
 
-def user_delete(user_id: int) -> HTTPException | str:
-    users = _load_users()
+def user_delete(user_id: int, session: Session) ->  str:
+    user = session.get(User, user_id)
 
-    if user_id not in users:
+    if not user:
         msg = f"user {user_id} is not found."
-        return HTTPException(status_code=404, detail=msg)
-    del users[user_id]
-    _save_users(users)
+        raise HTTPException(status_code=404, detail=msg)
+    session.delete(user)
+    session.commit()
     return f"Пользователь с id {user_id} удален"
 
 
-def user_with_items_model(user_id: int) -> HTTPException | UserWithItems:
+def user_with_items_model(user_id: int, session: Session) -> HTTPException | UserWithItems:
     users = _load_users()
     items = _load_items()
 
@@ -105,7 +104,7 @@ def user_with_items_model(user_id: int) -> HTTPException | UserWithItems:
     return UserWithItems(id=user_id, items=user_items, **user_data)
 
 
-def user_create_cart(cart_in: UserCartCreate) -> UserCartRead | None:
+def user_create_cart(cart_in: UserCartCreate, session: Session) -> UserCartRead | None:
     carts = _load_cart()
     cart_id = max(carts.keys(), default=0) + 1
     cart_data = cart_in.model_dump()
@@ -115,7 +114,7 @@ def user_create_cart(cart_in: UserCartCreate) -> UserCartRead | None:
     return cart
 
 
-def user_read_cart(user_id: int) -> HTTPException | UserCartRead:
+def user_read_cart(user_id: int, session: Session) -> HTTPException | UserCartRead:
     carts = _load_cart()
 
     cart_data = None
@@ -132,7 +131,7 @@ def user_read_cart(user_id: int) -> HTTPException | UserCartRead:
     return UserCartRead(**cart_data)
 
 
-def user_delete_cart(user_id: int) -> str | None:
+def user_delete_cart(user_id: int, session: Session) -> str | None:
     carts = _load_cart()
 
     cart_delete = None
