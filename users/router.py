@@ -37,7 +37,7 @@ def create_user(user_in: UserCreate, session:SessionDep) -> UserCreate:
 
 
 @router.patch("/{user_id}", status_code=status.HTTP_200_OK)
-def update_user(user_id: int, user_in: UserUpdate, session:SessionDep) -> type[User]:
+def update_user(user_id: int, user_in: UserUpdate, session:SessionDep) -> User:
     return user_update(user_id, user_in, session)
 
 

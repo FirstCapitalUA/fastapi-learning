@@ -59,13 +59,13 @@ def user_read(user_id: int, session: Session) -> UserRead:
     return UserRead(**user.model_dump())
 
 
-def user_update(user_id: int, user_in: UserUpdate, session: Session) -> type[User]:
-    user = session.get(User, user_id)
+def user_update(user_id: int, user_in: UserUpdate, session: Session) -> User:
+    user: User | None = session.get(User, user_id)
     if not user:
         msg = f"user {user_id} is not found."
         raise HTTPException(status_code=404, detail=msg)
 
-    update_data = user.model_dump(exclude_unset=True)
+    update_data = user_in.model_dump(exclude_unset=True)
 
     user.sqlmodel_update(update_data)
     session.add(user)
