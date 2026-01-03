@@ -1,19 +1,22 @@
-from pydantic import BaseModel
+from sqlmodel import Field, SQLModel
 
 
-class Item(BaseModel):
+class ItemBase(SQLModel):
     name: str
     description: str
     price: int
     quantity_in_stock: int
+
+class Item(ItemBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     owner_id: int | None = None
 
 
-class ItemCreate(Item):
+class ItemCreate(ItemBase):
     pass
 
 
-class ItemUpdate(BaseModel):
+class ItemUpdate(SQLModel):
     name: str | None = None
     description: str | None = None
     price: int | None = None
@@ -21,14 +24,14 @@ class ItemUpdate(BaseModel):
     owner_id: int | None = None
 
 
-class ItemReadShort(BaseModel):
+class ItemReadShort(SQLModel):
     name: str
     price: int
 
 
-class ItemRead(Item):
+class ItemRead(ItemBase):
     id: int
 
 
-class ItemsTotal(BaseModel):
+class ItemsTotal(ItemBase):
     total: float

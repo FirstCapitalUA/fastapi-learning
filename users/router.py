@@ -20,7 +20,7 @@ from users.model import (
     UserCreate,
     UserRead,
     UserReadShort,
-    UserUpdate, User,
+    UserUpdate, User, UserWithItems,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -52,31 +52,31 @@ def delete_user(user_id: int, session:SessionDep) -> str:
 
 
 @router.get("/with_items/{user_id}", status_code=status.HTTP_200_OK)
-def get_user_with_items_(user_id: int):
-    return user_with_items_model(user_id)
+def get_user_with_items_(user_id: int, session:SessionDep) -> UserWithItems:
+    return user_with_items_model(user_id, session)
 
 
 @router.post("/{user_id}/cart", status_code=status.HTTP_201_CREATED)
-def create_user_cart(user_cart_in: UserCartCreate) -> UserCartRead | None:
+def create_user_cart(user_cart_in: UserCartCreate, session:SessionDep) -> UserCartRead | None:
     """
     создать корзину с товарами для пользоавателя. У пользователя может быть только 1 корзина или не быть ее.
     корзина содержит ид пользователя и список ид предметов. Создать схему корзина и обновить схему юзер
     """
-    return user_create_cart(user_cart_in)
+    return user_create_cart(user_cart_in, session)
 
 
 @router.get("/{user_id}/cart", status_code=status.HTTP_200_OK)
-def get_user_cart(user_id: int) -> UserCart:
+def get_user_cart(user_id: int, session:SessionDep) -> UserCart:
     """
     получить корзину с товарами для пользоавателя.
     """
-    return user_read_cart(user_id)
+    return user_read_cart(user_id, session)
 
 
 @router.delete("/{user_id}/cart", status_code=status.HTTP_202_ACCEPTED)
-def delete_user_cart(user_id: int) -> str:
+def delete_user_cart(user_id: int, session:SessionDep) -> dict[str, str]:
     """
     удалить корзину с товарами для пользоавателя.
     """
-    return user_delete_cart(user_id)
+    return user_delete_cart(user_id, session)
 

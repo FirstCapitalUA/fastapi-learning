@@ -1,4 +1,5 @@
 from pydantic import EmailStr
+from sqlalchemy import Column, JSON
 
 from items.model import ItemReadShort
 
@@ -48,13 +49,11 @@ class UserWithItems(UserReadShort):
 
 class UserCart(SQLModel):
     user_id: int
-    item_ids: list[int] | None = None
-
+    item_ids: list[int] | None = Field(default=None, sa_column=Column(JSON))
 
 class UserCartCreate(UserCart):
     pass
 
-
-class UserCartRead(UserCart):
-    id: int
-
+# Добавляем table=True и первичный ключ
+class UserCartRead(UserCart, table=True):
+    id: int | None = Field(default=None, primary_key=True)

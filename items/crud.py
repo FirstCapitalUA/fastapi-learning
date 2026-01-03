@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, Sequence
 
 from fastapi import HTTPException
+from sqlmodel import Session, func, select
 
 from helper.files import read_json, write_json
 from items.model import Item, ItemCreate, ItemRead, ItemReadShort, ItemUpdate
@@ -13,96 +14,71 @@ def _load_items() -> dict[int, dict]:
 
 
 def _save_items(items: dict[int, dict]):
-    # Convert keys back to str for JSON compatibility
     db = read_json()
     db["items"] = {str(k): v for k, v in items.items()}
     write_json(db)
 
 
-def item_create(item_in: ItemCreate) -> Item:
-    items = _load_items()
-
-    # новый ID
-    new_id = max(items.keys(), default=0) + 1
-
+def item_create(item_in: ItemCreate, session: Session) -> ItemCreate:
     item = Item(**item_in.model_dump())
-    items[new_id] = item.model_dump()
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return item_in
 
-    _save_items(items)
+
+def item_read(item_id: int, session: Session) -> ItemRead | HTTPException:
+    item = session.get(Item, item_id)
+    if not item:
+        msg = f"Item {item_id} is not found."
+        return HTTPException(status_code=404, detail=msg)
+    return ItemRead(**item.model_dump())
+
+
+def item_read_all(session: Session) -> list[ItemReadShort]:
+    items = session.exec(select(Item)).all()
+    return [ItemReadShort(**item.model_dump()) for item in items]
+
+
+def item_delete(item_id: int, session: Session) -> HTTPException | str:
+    items = session.get(Item, item_id)
+    if not items:
+        msg = f"Item {item_id} is not found."
+        return HTTPException(status_code=404, detail=msg)
+    session.delete(items)
+    session.commit()
+    return f"Предмет с id {item_id} удален"
+
+
+def item_update(item_id: int, item_in: ItemUpdate, session: Session) -> Item:
+    item: Item | None = session.get(Item, item_id)
+
+    if not item:
+        msg = f"Item {item_id} is not found."
+        raise HTTPException(status_code=404, detail=msg)
+
+    update_data = item_in.model_dump(exclude_unset=True)
+    item.sqlmodel_update(update_data)
+    session.add(item)
+    session.commit()
+    session.refresh(item)
 
     return item
 
 
-def item_read(item_id: int) -> ItemRead | HTTPException:
-    items = _load_items()
-    item_data = items.get(item_id)
+def items_filter_by_owner_id(owner_id: int, session: Session) -> Sequence[Any]:
+    statement = select(Item).where(Item.owner_id == owner_id)
 
-    if not item_data:
-        msg = f"Item {item_id} is not found."
-        return HTTPException(status_code=404, detail=msg)
+    items = session.exec(statement).all()
 
-    return ItemRead(id=item_id, **item_data)
+    if not items:
+        raise HTTPException(status_code=404, detail=f"No items found for owner {owner_id}")
 
-
-def item_read_all() -> list[ItemReadShort]:
-    items = _load_items()
-    return [ItemReadShort(**data) for data in items.values()]
+    return items
 
 
-def item_delete(item_id: int) -> HTTPException | str:
-    items = _load_items()
+def item_calculate_total_price(ids: list[int], session: Session) -> float:
+    statement = select(func.sum(Item.price)).where(Item.id.in_(ids))
+    total = session.exec(statement).one()
 
-    if item_id not in items:
-        msg = f"Item {item_id} is not found."
-        return HTTPException(status_code=404, detail=msg)
-    del items[item_id]
-    _save_items(items)
-    return f"Предмет с id {item_id} удален"
-
-
-def item_update(item_id: int, item_in: ItemUpdate) -> ItemRead:
-    items = _load_items()
-
-    if item_id not in items:
-        msg = f"Item {item_id} is not found."
-        raise HTTPException(status_code=404, detail=msg)
-
-    current_item_data = items[item_id]
-    update_data = item_in.model_dump(exclude_unset=True)
-
-    current_item_data.update(update_data)
-    items[item_id] = current_item_data
-
-    _save_items(items)
-
-    return ItemRead(id=item_id, **current_item_data)
-
-
-def items_filter_by_owner_id(owner_id: int) -> list[ItemRead]:
-    items = _load_items()
-    owner_data = []
-    for key, value in items.items():
-        if value["owner_id"] == owner_id:
-            owner_data.append(ItemRead(id=key, **value))
-    return owner_data
-
-
-def item_calculate_total_price(ids: list[int]) -> HTTPException | float | Any:
-    """
-     мы получаем ид 1 и более итемов , суммируем их между собой и отправляем обратно результат.
-     Для этого мы создаем функцию которая будет находить итем_ид в имтемс. Если ид есть
-     добавляем в список. Далее все что находится в списке мы сумируем между собой и возвращаем сумму
-    :param ids: ids  для подсчета суммы
-    :return: общая стоимость
-    """
-    total_sum = 0.0
-    items = _load_items()
-
-    for item_id in ids:
-        if item_id not in items:
-            msg = f"Item {item_id} is not found."
-            return HTTPException(status_code=404, detail=msg)
-        item_data = items[item_id]
-        price = item_data.get("price", 0.0)
-        total_sum += price
-    return total_sum
+    return total if total is not None else 0.0
