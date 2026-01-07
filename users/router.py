@@ -3,6 +3,7 @@ from starlette import status
 
 from core.database import SessionDep
 from users.crud import (
+    user_buy_item,
     user_create,
     user_create_cart,
     user_delete,
@@ -14,13 +15,15 @@ from users.crud import (
     user_with_items_model,
 )
 from users.model import (
+    User,
     UserCart,
     UserCartCreate,
     UserCartRead,
     UserCreate,
     UserRead,
     UserReadShort,
-    UserUpdate, User, UserWithItems,
+    UserUpdate,
+    UserWithItems,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -32,32 +35,32 @@ def get_user(user_id: int, session: SessionDep) -> UserRead:
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_user(user_in: UserCreate, session:SessionDep) -> UserCreate:
+def create_user(user_in: UserCreate, session: SessionDep) -> UserCreate:
     return user_create(user_in, session)
 
 
 @router.patch("/{user_id}", status_code=status.HTTP_200_OK)
-def update_user(user_id: int, user_in: UserUpdate, session:SessionDep) -> User:
+def update_user(user_id: int, user_in: UserUpdate, session: SessionDep) -> User:
     return user_update(user_id, user_in, session)
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def read_all_users(session:SessionDep) -> list[UserReadShort]:
+def read_all_users(session: SessionDep) -> list[UserReadShort]:
     return user_read_all(session)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-def delete_user(user_id: int, session:SessionDep) -> str:
+def delete_user(user_id: int, session: SessionDep) -> str:
     return user_delete(user_id, session)
 
 
 @router.get("/with_items/{user_id}", status_code=status.HTTP_200_OK)
-def get_user_with_items_(user_id: int, session:SessionDep) -> UserWithItems:
+def get_user_with_items_(user_id: int, session: SessionDep) -> UserWithItems:
     return user_with_items_model(user_id, session)
 
 
 @router.post("/{user_id}/cart", status_code=status.HTTP_201_CREATED)
-def create_user_cart(user_cart_in: UserCartCreate, session:SessionDep) -> UserCartRead | None:
+def create_user_cart(user_cart_in: UserCartCreate, session: SessionDep) -> UserCartRead | None:
     """
     создать корзину с товарами для пользоавателя. У пользователя может быть только 1 корзина или не быть ее.
     корзина содержит ид пользователя и список ид предметов. Создать схему корзина и обновить схему юзер
@@ -66,7 +69,7 @@ def create_user_cart(user_cart_in: UserCartCreate, session:SessionDep) -> UserCa
 
 
 @router.get("/{user_id}/cart", status_code=status.HTTP_200_OK)
-def get_user_cart(user_id: int, session:SessionDep) -> UserCart:
+def get_user_cart(user_id: int, session: SessionDep) -> UserCart:
     """
     получить корзину с товарами для пользоавателя.
     """
@@ -74,9 +77,13 @@ def get_user_cart(user_id: int, session:SessionDep) -> UserCart:
 
 
 @router.delete("/{user_id}/cart", status_code=status.HTTP_202_ACCEPTED)
-def delete_user_cart(user_id: int, session:SessionDep) -> dict[str, str]:
+def delete_user_cart(user_id: int, session: SessionDep) -> dict[str, str]:
     """
     удалить корзину с товарами для пользоавателя.
     """
     return user_delete_cart(user_id, session)
 
+
+@router.post("/{user_id}/items", status_code=status.HTTP_201_CREATED)
+def user_item_buy(user_id: int, item_id: int, session: SessionDep) -> dict:
+    return user_buy_item(user_id, item_id, session)

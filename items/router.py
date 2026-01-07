@@ -1,4 +1,5 @@
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from fastapi import APIRouter
 from starlette import status
@@ -15,23 +16,23 @@ from items.crud import (
 )
 from items.model import (
     Item,
+    ItemBase,
     ItemCreate,
     ItemRead,
     ItemReadShort,
-    ItemsTotal,
-    ItemUpdate, ItemBase,
+    ItemUpdate,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 
 @router.get("/{item_id}", status_code=status.HTTP_200_OK)
-def get_item(item_id: int, session: SessionDep) -> Item | None:
+def get_item(item_id: int, session: SessionDep) -> ItemRead:
     return item_read(item_id, session)
 
 
 @router.post("/{item_id}", status_code=status.HTTP_202_ACCEPTED)
-def create_item(item_in: ItemCreate, session:SessionDep) -> ItemBase:
+def create_item(item_in: ItemCreate, session: SessionDep) -> ItemBase:
     return item_create(item_in, session)
 
 
@@ -56,13 +57,5 @@ def get_items_by_owner(owner_id: int, session: SessionDep) -> Sequence[Any]:
 
 
 @router.post("/calculate-total/", status_code=status.HTTP_202_ACCEPTED)
-def calculate_cart_total(item_ids: list[int], session: SessionDep) -> ItemsTotal:
-    """
-     мы получаем ид 1 и более итемов , суммируем их между собой и отправляем обратно результат.
-     - Для этого мы создаем функцию которая будет находить итем_ид в имтемс. Если ид есть
-     *добавляем* в **список**. Далее все что находится в списке мы сумируем между собой и возвращаем сумму
-    :param ids: ids  для подсчета суммы
-    :return: общая стоимость
-    """
-    total_sum = item_calculate_total_price(item_ids)
-    return ItemsTotal(total=total_sum)
+def item_calculate_total(item_ids: list[int], session: SessionDep) -> float:
+    return item_calculate_total_price(item_ids, session)

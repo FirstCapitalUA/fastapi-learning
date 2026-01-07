@@ -109,10 +109,7 @@ def user_create_cart(cart_in: UserCartCreate, session: Session) -> UserCartRead:
     statement = select(UserCartRead).where(UserCartRead.user_id == cart_in.user_id)
     cart = session.exec(statement).first()
     if cart:
-        raise HTTPException(
-            status_code=400,
-            detail="User already has a cart"
-        )
+        raise HTTPException(status_code=400, detail="User already has a cart")
 
     # 3. Создаем корзину
     db_cart = UserCartRead.model_validate(cart_in)
@@ -154,3 +151,25 @@ def user_delete_cart(user_id: int, session: Session) -> dict[str, str]:
     session.commit()
 
     return {"detail": f"Cart for user {user_id} successfully deleted"}
+
+
+def user_buy_item(user_id: int, item_id: int, session: Session) -> dict:
+    # 1. Получаем пользователя и товар из базы
+    user = session.get(User, user_id)
+    item = session.get(Item, item_id)
+
+    if not user or not item:
+        raise HTTPException(status_code=404, detail="User or Item not found")
+
+    # 2. Проверяем баланс
+    if user.balance < item.price:
+        raise HTTPException(status_code=400, detail=f"Недостаточно средств. Нужно: {item.price}, у вас: {user.balance}")
+
+    # 3. Списываем деньги
+    user.balance -= item.price
+
+    # 4. Сохраняем всё одним махом
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return {"message": "Покупка успешна", "new_balance": user.balance}

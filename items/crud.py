@@ -1,4 +1,5 @@
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from fastapi import HTTPException
 from sqlmodel import Session, func, select
@@ -81,4 +82,4 @@ def item_calculate_total_price(ids: list[int], session: Session) -> float:
     statement = select(func.sum(Item.price)).where(Item.id.in_(ids))
     total = session.exec(statement).one()
 
-    return total if total is not None else 0.0
+    return total or 0.0

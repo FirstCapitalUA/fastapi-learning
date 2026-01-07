@@ -7,9 +7,12 @@ from users.router import router as users_router
 
 app = FastAPI()
 
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+
+
 @app.get("/")
 def read_root():
     return {"Hello World"}

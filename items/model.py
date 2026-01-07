@@ -7,6 +7,7 @@ class ItemBase(SQLModel):
     price: int
     quantity_in_stock: int
 
+
 class Item(ItemBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     owner_id: int | None = None
@@ -25,13 +26,10 @@ class ItemUpdate(SQLModel):
 
 
 class ItemReadShort(SQLModel):
+    id: int
     name: str
     price: int
 
 
 class ItemRead(ItemBase):
     id: int
-
-
-class ItemsTotal(ItemBase):
-    total: float
