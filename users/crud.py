@@ -173,3 +173,41 @@ def user_buy_item(user_id: int, item_id: int, session: Session) -> dict:
     session.commit()
     session.refresh(user)
     return {"message": "Покупка успешна", "new_balance": user.balance}
+
+
+# добавленные товары в корзину оплатить отдельным эндпоинтом
+def user_buy_items_for_cart(user_id: int, session: Session) -> dict:  # Поменял на dict для удобства
+
+    statement = select(UserCartRead).where(UserCartRead.user_id == user_id)
+    cart = session.exec(statement).first()
+    user = session.get(User, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found")
+
+    if not cart.item_ids:
+        raise HTTPException(status_code=400, detail="Cart is empty")
+
+    items_statement = select(Item).where(Item.id.in_(cart.item_ids))
+    items = session.exec(items_statement).all()
+
+    total_price = sum(item.price for item in items)
+
+    if user.balance < total_price:
+        raise HTTPException(status_code=400, detail=f"Low balance: {total_price}, you have: {user.balance}")
+
+    user.balance -= total_price
+    cart.item_ids = [] # TODO добавить удаление корзины, а не очистку
+
+    session.add(user)
+    session.add(cart)
+    session.commit()
+
+    session.refresh(user)
+
+    return {"admin say": "order complete", "You new balance": user.balance}
+
+

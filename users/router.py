@@ -4,6 +4,7 @@ from starlette import status
 from core.database import SessionDep
 from users.crud import (
     user_buy_item,
+    user_buy_items_for_cart,
     user_create,
     user_create_cart,
     user_delete,
@@ -87,3 +88,8 @@ def delete_user_cart(user_id: int, session: SessionDep) -> dict[str, str]:
 @router.post("/{user_id}/items", status_code=status.HTTP_201_CREATED)
 def user_item_buy(user_id: int, item_id: int, session: SessionDep) -> dict:
     return user_buy_item(user_id, item_id, session)
+
+
+@router.post("/{user_id}/cart/buy", status_code=status.HTTP_202_ACCEPTED)
+def user_buy_cart_items(user_id: int, session: SessionDep) -> dict:
+    return user_buy_items_for_cart(user_id, session)

@@ -8,7 +8,7 @@ DEFAULT_DATA = {"users": {}, "items": {}}
 
 def ensure_file_exists(path=DATABASE_PATH):
     """Создаёт файл, если он не существует."""
-    if not os.path.exists(path):
+    if not os.path.exists(path):  # noqa: PTH110
         print("Файл не найден. Создаём новый файл...")
         write_json(DEFAULT_DATA, path)
 
