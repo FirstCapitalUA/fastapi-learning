@@ -177,7 +177,6 @@ def user_buy_item(user_id: int, item_id: int, session: Session) -> dict:
 
 # добавленные товары в корзину оплатить отдельным эндпоинтом
 def user_buy_items_for_cart(user_id: int, session: Session) -> dict:  # Поменял на dict для удобства
-
     statement = select(UserCartRead).where(UserCartRead.user_id == user_id)
     cart = session.exec(statement).first()
     user = session.get(User, user_id)
@@ -200,14 +199,11 @@ def user_buy_items_for_cart(user_id: int, session: Session) -> dict:  # Поме
         raise HTTPException(status_code=400, detail=f"Low balance: {total_price}, you have: {user.balance}")
 
     user.balance -= total_price
-    cart.item_ids = [] # TODO добавить удаление корзины, а не очистку
 
     session.add(user)
-    session.add(cart)
+    session.delete(cart)
     session.commit()
 
     session.refresh(user)
 
     return {"admin say": "order complete", "You new balance": user.balance}
-
-
