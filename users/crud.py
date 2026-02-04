@@ -14,6 +14,8 @@ from users.model import (
     UserWithItems,
 )
 
+ADULT_AGE = 18
+
 
 def _load_users() -> dict[int, dict]:
     db = read_json()
@@ -154,28 +156,26 @@ def user_delete_cart(user_id: int, session: Session) -> dict[str, str]:
 
 
 def user_buy_item(user_id: int, item_id: int, session: Session) -> dict:
-    # 1. Получаем пользователя и товар из базы
     user = session.get(User, user_id)
     item = session.get(Item, item_id)
 
     if not user or not item:
         raise HTTPException(status_code=404, detail="User or Item not found")
 
-    # 2. Проверяем баланс
     if user.balance < item.price:
         raise HTTPException(status_code=400, detail=f"Недостаточно средств. Нужно: {item.price}, у вас: {user.balance}")
 
-    # 3. Списываем деньги
+    if item.adult_product and user.age < ADULT_AGE:
+        raise HTTPException(status_code=400, detail=f"You are not yet {ADULT_AGE} years old")
+
     user.balance -= item.price
 
-    # 4. Сохраняем всё одним махом
     session.add(user)
     session.commit()
     session.refresh(user)
     return {"message": "Покупка успешна", "new_balance": user.balance}
 
 
-# добавленные товары в корзину оплатить отдельным эндпоинтом
 def user_buy_items_for_cart(user_id: int, session: Session) -> dict:  # Поменял на dict для удобства
     statement = select(UserCartRead).where(UserCartRead.user_id == user_id)
     cart = session.exec(statement).first()
@@ -197,6 +197,10 @@ def user_buy_items_for_cart(user_id: int, session: Session) -> dict:  # Поме
 
     if user.balance < total_price:
         raise HTTPException(status_code=400, detail=f"Low balance: {total_price}, you have: {user.balance}")
+
+    for item in items:
+        if item.adult_product and user.age < ADULT_AGE:
+            raise HTTPException(status_code=400, detail=f"You are not yet {ADULT_AGE} years old")
 
     user.balance -= total_price
 

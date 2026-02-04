@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from core.database import create_db_and_tables
+from core.database import create_db_and_tables, load_data_from_json
 from items.router import router as items_router
 from users.router import router as users_router
 
@@ -11,6 +11,7 @@ app = FastAPI()
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    load_data_from_json("data.json")
 
 
 @app.get("/")

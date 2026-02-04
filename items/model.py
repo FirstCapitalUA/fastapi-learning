@@ -6,11 +6,13 @@ class ItemBase(SQLModel):
     description: str
     price: int
     quantity_in_stock: int
+    adult_product: bool
 
 
 class Item(ItemBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     owner_id: int | None = None
+    adult_product: bool
 
 
 class ItemCreate(ItemBase):
@@ -29,7 +31,9 @@ class ItemReadShort(SQLModel):
     id: int
     name: str
     price: int
+    adult_product: bool
 
 
 class ItemRead(ItemBase):
     id: int
+    adult_product: bool
