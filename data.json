@@ -8,7 +8,6 @@
       "age": 23,
       "password": "qwerty1234",
       "sex": "Male",
-      "cart_id": 1,
       "balance": 1000
     },
     {
@@ -19,7 +18,6 @@
       "age": 32,
       "password": "wwerty12345",
       "sex": "Male",
-      "cart_id": 2,
       "balance": 2000
     },
     {
@@ -30,7 +28,6 @@
       "age": 33,
       "password": "wwwrty12e45",
       "sex": "Male",
-      "cart_id": 3,
       "balance": 2300
     },
     {
@@ -41,7 +38,6 @@
       "age": 35,
       "password": "wwwrqwee45",
       "sex": "Female",
-      "cart_id": 4,
       "balance": 740
     },
     {
@@ -52,7 +48,6 @@
       "age": 25,
       "password": "lasto4ka25",
       "sex": "Female",
-      "cart_id": 5,
       "balance": 3320
     },
     {
@@ -63,7 +58,6 @@
       "age": 27,
       "password": "lastik27slav",
       "sex": "Male",
-      "cart_id": 6,
       "balance": 1705
     },
     {
@@ -74,7 +68,6 @@
       "age": 33,
       "password": "perdol4ik111",
       "sex": "Male",
-      "cart_id": 7,
       "balance": 2212
     },
     {
@@ -85,7 +78,6 @@
       "age": 29,
       "password": "unomax2921",
       "sex": "Male",
-      "cart_id": 8,
       "balance": 2000
     },
     {
@@ -96,7 +88,6 @@
       "age": 22,
       "password": "qwerty123",
       "sex": "Male",
-      "cart_id": 9,
       "balance": 1700
     },
     {
@@ -107,7 +98,6 @@
       "age": 23,
       "password": "bazalexaner",
       "sex": "Male",
-      "cart_id": 10,
       "balance": 2222
     }
   ],
