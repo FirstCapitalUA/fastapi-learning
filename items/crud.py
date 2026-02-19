@@ -4,20 +4,7 @@ from typing import Any
 from fastapi import HTTPException
 from sqlmodel import Session, func, select
 
-from helper.files import read_json, write_json
 from items.model import Item, ItemCreate, ItemRead, ItemReadShort, ItemUpdate
-
-
-def _load_items() -> dict[int, dict]:
-    db = read_json()
-    items = db.get("items", {})
-    return {int(k): v for k, v in items.items()}
-
-
-def _save_items(items: dict[int, dict]):
-    db = read_json()
-    db["items"] = {str(k): v for k, v in items.items()}
-    write_json(db)
 
 
 def item_create(item_in: ItemCreate, session: Session) -> ItemCreate:
@@ -25,7 +12,7 @@ def item_create(item_in: ItemCreate, session: Session) -> ItemCreate:
     session.add(item)
     session.commit()
     session.refresh(item)
-    return item_in
+    return item_in  # TODO return db item
 
 
 def item_read(item_id: int, session: Session) -> ItemRead | HTTPException:

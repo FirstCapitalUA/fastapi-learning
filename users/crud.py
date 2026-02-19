@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
+from core.config import settings
 from helper.files import read_json, write_json
 from items.model import Item
 from users.model import (
@@ -14,7 +15,7 @@ from users.model import (
     UserWithItems,
 )
 
-ADULT_AGE = 18
+ADULT_AGE = settings.adult_age
 
 
 def _load_users() -> dict[int, dict]:

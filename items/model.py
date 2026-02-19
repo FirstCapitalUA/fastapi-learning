@@ -12,7 +12,6 @@ class ItemBase(SQLModel):
 class Item(ItemBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     owner_id: int | None = None
-    adult_product: bool
 
 
 class ItemCreate(ItemBase):
@@ -25,6 +24,7 @@ class ItemUpdate(SQLModel):
     price: int | None = None
     quantity_in_stock: int | None = None
     owner_id: int | None = None
+    # adult_product we don't want change this
 
 
 class ItemReadShort(SQLModel):
@@ -36,4 +36,3 @@ class ItemReadShort(SQLModel):
 
 class ItemRead(ItemBase):
     id: int
-    adult_product: bool
